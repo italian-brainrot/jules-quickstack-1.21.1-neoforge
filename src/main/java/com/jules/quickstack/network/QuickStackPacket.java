@@ -20,12 +20,27 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 public record QuickStackPacket() implements CustomPacketPayload {
     public static final Type<QuickStackPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(QuickStack.MODID, "quick_stack"));
     public static final StreamCodec<ByteBuf, QuickStackPacket> STREAM_CODEC = StreamCodec.unit(new QuickStackPacket());
+
+    private static Method ipnIsSlotLockedMethod;
+    private static Object ipnLockSlotsHandlerInstance;
+
+    static {
+        try {
+            Class<?> lockSlotsHandlerClass = Class.forName("org.anti_ad.mc.ipnext.event.LockSlotsHandler");
+            ipnLockSlotsHandlerInstance = lockSlotsHandlerClass.getField("INSTANCE").get(null);
+            ipnIsSlotLockedMethod = lockSlotsHandlerClass.getMethod("isSlotLocked", int.class);
+        } catch (Exception e) {
+            ipnIsSlotLockedMethod = null;
+            ipnLockSlotsHandlerInstance = null;
+        }
+    }
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -64,6 +79,19 @@ public record QuickStackPacket() implements CustomPacketPayload {
                     for (int i = 0; i < serverPlayer.getInventory().getContainerSize(); i++) {
                         ItemStack playerStack = serverPlayer.getInventory().getItem(i);
                         if (playerStack.isEmpty()) {
+                            continue;
+                        }
+
+                        boolean isIpnLocked = false;
+                        if (ipnIsSlotLockedMethod != null) {
+                            try {
+                                isIpnLocked = (boolean) ipnIsSlotLockedMethod.invoke(ipnLockSlotsHandlerInstance, i);
+                            } catch (Exception e) {
+                                // Ignore
+                            }
+                        }
+
+                        if (isIpnLocked) {
                             continue;
                         }
 
