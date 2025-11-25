@@ -76,7 +76,8 @@ public record QuickStackPacket() implements CustomPacketPayload {
                         return;
                     }
 
-                    for (int i = 0; i < serverPlayer.getInventory().getContainerSize(); i++) {
+                    // The player's main inventory and hotbar are slots 0-35. 36 is the first armor slot.
+                    for (int i = 0; i < 36; i++) {
                         ItemStack playerStack = serverPlayer.getInventory().getItem(i);
                         if (playerStack.isEmpty()) {
                             continue;
