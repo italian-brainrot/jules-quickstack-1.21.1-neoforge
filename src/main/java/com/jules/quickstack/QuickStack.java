@@ -23,8 +23,6 @@ public class QuickStack {
         modEventBus.addListener(PacketHandler::register);
 
         container.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-
-        NeoForge.EVENT_BUS.register(this);
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
