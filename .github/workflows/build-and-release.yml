@@ -8,7 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
+    permissions:
+      actions: read
+      packages: write
+      id-token: write
+      attestations: write
+      contents: read
+      checks: write
+      pull-requests: write
+      repository-projects: write
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
